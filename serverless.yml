@@ -1,0 +1,27 @@
+service: lambdaformhandler
+
+frameworkVersion: ">=1.1.0 <2.0.0"
+
+provider:
+  name: aws
+  stage: prod
+  runtime: nodejs12.x
+  environment:
+    ALLOW_ALL_DOMAINS: "no"
+    ALLOWED_DOMAINS: ""
+    MAILGUN_API_KEY: ""
+    MAILGUN_FROM_EMAIL: ""
+    MAILGUN_DOMAIN: ""
+    SMTP_SERVER: "" 
+    SMTP_EMAIL: ""
+    SMTP_PASSWORD: ""
+    SMTP_PORT: ""
+
+functions:
+  handleForm:
+    handler: handler.handleForm
+    events:
+      - http:
+          path: handle-form
+          method: post
+          cors: true

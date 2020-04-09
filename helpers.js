@@ -1,0 +1,181 @@
+const mailgunJS = require('mailgun-js')
+const nodemailer = require("nodemailer")
+
+module.exports = {
+    validateAndFetchEnvVariables,
+    getEmailHeader,
+    handleFormFields,
+    parseFormData,
+    sendMail
+}
+
+function checkAllowedDomains(config) {
+    if(process.env.ALLOWED_DOMAINS
+        && process.env.ALLOWED_DOMAINS.length > 0) {
+            let allowedDomains = process.env.ALLOWED_DOMAINS.replace(/ /g,"").split(",")
+            if(allowedDomains.length > 0) {
+                config.allowedDomains = allowedDomains
+            }
+            else {
+                config.valid = false
+                config.reason = "ALLOW_ALL_DOMAINS doesn't exist or set to 'no' and ALLOWED_DOMAINS doesn't exist or is invalid."
+            }
+    }
+    else {
+        config.valid = false
+        config.reason = "ALLOW_ALL_DOMAINS doesn't exist or set to 'no' and ALLOWED_DOMAINS doesn't exist or is invalid."
+    }
+
+    return config
+}
+
+function validateAndFetchEnvVariables(config) {
+    config = {
+        "valid": true
+    }
+    if(process.env.ALLOW_ALL_DOMAINS
+        && process.env.ALLOW_ALL_DOMAINS.length > 0) {
+        if(process.env.ALLOW_ALL_DOMAINS == "yes") {
+            config.allowAllDomains = true
+        }
+        else if(process.env.ALLOW_ALL_DOMAINS == "no") {
+            config.allowAllDomains = false
+            config = checkAllowedDomains(config)
+        }
+        else {
+            config.valid = false
+            config.reason = "ALLOW_ALL_DOMAINS must be set to 'yes or 'no."
+        }
+    }
+    else {
+        config.allowAllDomains = false
+        config = checkAllowedDomains(config)
+    }
+    if(config.valid) {
+        if(process.env.MAILGUN_API_KEY 
+            && process.env.MAILGUN_API_KEY.length > 0
+            && process.env.MAILGUN_FROM_EMAIL 
+            && process.env.MAILGUN_FROM_EMAIL.length > 0
+            && process.env.MAILGUN_DOMAIN 
+            && process.env.MAILGUN_DOMAIN.length > 0) {
+            config.method = 1
+            config.mailgunAPIKey = process.env.MAILGUN_API_KEY
+            config.mailgunFromEmail = process.env.MAILGUN_FROM_EMAIL
+            config.mailgunDomain = process.env.MAILGUN_DOMAIN
+        }
+        else if(process.env.SMTP_SERVER && process.env.SMTP_SERVER.length > 0
+            && process.env.SMTP_EMAIL && process.env.SMTP_EMAIL.length > 0
+            && process.env.SMTP_PASSWORD && process.env.SMTP_PASSWORD.length > 0
+            && process.env.SMTP_PORT && process.env.SMTP_PORT.length > 0) {
+            config.method = 2
+            config.smtpServer = process.env.SMTP_SERVER
+            config.smtpEmail = process.env.SMTP_EMAIL
+            config.smtpPassword = process.env.SMTP_PASSWORD
+            config.smtpPort = parseInt(process.env.SMTP_PORT)
+        }
+        else {
+            config.valid = false
+            config.reason = "No valid email system configuration."
+        }
+    }
+    return config
+}
+
+function getEmailHeader(formName, postURL) {
+    let date = (new Date)
+    let dateString = ((date.getMonth() > 8) ? (date.getMonth() + 1) : ('0' + (date.getMonth() + 1))) + '/' + ((date.getDate() > 9) ? date.getDate() : ('0' + date.getDate())) + '/' + date.getFullYear()  
+    let html = `
+        <h2>New Form Submission${(formName ? " for " + formName : (postURL ? " for " + postURL : ""))}</h2>
+      `
+      if(formName && postURL) {
+        html += `
+          <b>Form URL:</b> ${postURL}<br>
+        `
+      }
+      html += `
+        <b>Date:</b> ${dateString} (UTC)<br><br>
+      `
+      return html
+}
+
+function handleFormFields(postData) {
+    let html = ""
+    html += `
+        <table style="width: 100%; padding: 1opx; border: 1px solid #ddd;  text-align: left; border-collapse: collapse;">
+            <tr>
+                <th style="padding: 10px; border: 1px solid #ddd;  text-align: left;">Field</th>
+                <th style="padding: 10px; border: 1px solid #ddd;  text-align: left;">Value</th>
+            </tr>
+    `
+    Object.keys(postData).forEach((x) => {
+        if(x[0] != "_") {
+            html += `
+                <tr>
+                    <td style="padding: 10px; border: 1px solid #ddd;  text-align: left;">${x}</td>
+                    <td style="padding: 10px; border: 1px solid #ddd;  text-align: left;">${postData[x]}</td>
+                </tr>
+            `
+        }
+    })
+    html += `
+        </table>
+    `
+    return html
+}
+
+function parseFormData(data) {
+    let postData = {}
+    for(let item of data.split("&")) {
+        let itemParts = item.split("=")
+        postData[itemParts[0]] = decodeURIComponent(itemParts[1].replace(/\+/g, '%20'))
+    }
+    console.log(postData)
+    return postData
+}
+
+function sendMail(toEmail, formName, replyEmail, messageHTML, config, callback) {
+    let subject = "A New Form Submission Has Arrived" + (formName ? " - "  + formName : "")
+    if(config.method == 1) {
+        let mailgun = new mailgunJS({ apiKey: config.mailgunAPIKey, domain: config.mailgunDomain })
+        let emailConfig = {
+            to: toEmail,
+            from: config.mailgunFromEmail,
+            subject: subject,
+            html: messageHTML,
+        }
+        if(replyEmail) {
+            emailConfig["h:Reply-To"] = replyEmail
+        }
+        mailgun.messages().send(emailConfig, (err, body) => {
+            let retVal = null
+            if(err) {
+                retVal = err
+            }
+            return(callback(retVal))
+        })
+    }
+    else if(config.method == 2) {
+        let transporter = nodemailer.createTransport({
+            host: config.smtpEmail,
+            port: config.smtpPort,
+            secure: false,
+            auth: {
+                user: config.smtpEmail,
+                pass: config.smtpPassword
+            }
+        })
+        let emailConfig = {
+            from: config.smtpEmail,
+            to: toEmail,
+            subject: subject,
+            html: messageHTML
+        }
+        transporter.sendMail(emailConfig, (err) => {
+            let retVal = null
+            if(err) {
+                retVal = err
+            }
+            return(callback(retVal))
+        })
+    }
+}

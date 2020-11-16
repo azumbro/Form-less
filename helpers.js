@@ -12,26 +12,25 @@ module.exports = {
 function checkAllowedDomains(config) {
     if(process.env.ALLOWED_DOMAINS
         && process.env.ALLOWED_DOMAINS.length > 0) {
-            let allowedDomains = process.env.ALLOWED_DOMAINS.replace(/ /g,"").split(",")
+            const allowedDomains = process.env.ALLOWED_DOMAINS.replace(/ /g,"").split(",")
             if(allowedDomains.length > 0) {
                 config.allowedDomains = allowedDomains
             }
             else {
                 config.valid = false
-                config.reason = "ALLOW_ALL_DOMAINS doesn't exist or set to 'no' and ALLOWED_DOMAINS doesn't exist or is invalid."
+                config.reason = `ALLOW_ALL_DOMAINS doesn't exist or set to 'no' and ALLOWED_DOMAINS doesn't exist or is invalid.`
             }
     }
     else {
         config.valid = false
-        config.reason = "ALLOW_ALL_DOMAINS doesn't exist or set to 'no' and ALLOWED_DOMAINS doesn't exist or is invalid."
+        config.reason = `ALLOW_ALL_DOMAINS doesn't exist or set to 'no' and ALLOWED_DOMAINS doesn't exist or is invalid.`
     }
-
     return config
 }
 
 function validateAndFetchEnvVariables(config) {
     config = {
-        "valid": true
+        valid: true
     }
     if(process.env.ALLOW_ALL_DOMAINS
         && process.env.ALLOW_ALL_DOMAINS.length > 0) {
@@ -44,7 +43,7 @@ function validateAndFetchEnvVariables(config) {
         }
         else {
             config.valid = false
-            config.reason = "ALLOW_ALL_DOMAINS must be set to 'yes or 'no."
+            config.reason = `ALLOW_ALL_DOMAINS must be set to "yes" or "no".`
         }
     }
     else {
@@ -75,7 +74,7 @@ function validateAndFetchEnvVariables(config) {
         }
         else {
             config.valid = false
-            config.reason = "No valid email system configuration."
+            config.reason = `No valid email system configuration.`
         }
     }
     return config
@@ -85,7 +84,7 @@ function getEmailHeader(formName, postURL) {
     let date = (new Date)
     let dateString = ((date.getMonth() > 8) ? (date.getMonth() + 1) : ('0' + (date.getMonth() + 1))) + '/' + ((date.getDate() > 9) ? date.getDate() : ('0' + date.getDate())) + '/' + date.getFullYear()  
     let html = `
-        <h2>New Form Submission${(formName ? " for " + formName : (postURL ? " for " + postURL : ""))}</h2>
+        <h2>New Form Submission ${(formName ? " for " + formName : (postURL ? " for " + postURL : ""))}</h2>
       `
       if(formName && postURL) {
         html += `
@@ -99,24 +98,23 @@ function getEmailHeader(formName, postURL) {
 }
 
 function handleFormFields(postData) {
-    let html = ""
-    html += `
+    let html = `
         <table style="width: 100%; padding: 1opx; border: 1px solid #ddd;  text-align: left; border-collapse: collapse;">
             <tr>
                 <th style="padding: 10px; border: 1px solid #ddd;  text-align: left;">Field</th>
                 <th style="padding: 10px; border: 1px solid #ddd;  text-align: left;">Value</th>
             </tr>
     `
-    Object.keys(postData).forEach((x) => {
-        if(x[0] != "_") {
+    Object.keys(postData)
+        .filter(key => key[0] != "_")
+        .forEach(key => {
             html += `
                 <tr>
-                    <td style="padding: 10px; border: 1px solid #ddd;  text-align: left;">${x}</td>
-                    <td style="padding: 10px; border: 1px solid #ddd;  text-align: left;">${postData[x]}</td>
+                    <td style="padding: 10px; border: 1px solid #ddd;  text-align: left;">${key}</td>
+                    <td style="padding: 10px; border: 1px solid #ddd;  text-align: left;">${postData[key]}</td>
                 </tr>
             `
-        }
-    })
+        })
     html += `
         </table>
     `
@@ -124,9 +122,9 @@ function handleFormFields(postData) {
 }
 
 function parseFormData(data) {
-    let postData = {}
-    for(let item of data.split("&")) {
-        let itemParts = item.split("=")
+    const postData = {}
+    for(const item of data.split("&")) {
+        const itemParts = item.split("=")
         postData[itemParts[0]] = decodeURIComponent(itemParts[1].replace(/\+/g, '%20'))
     }
     console.log(postData)
@@ -134,10 +132,13 @@ function parseFormData(data) {
 }
 
 function sendMail(toEmail, formName, replyEmail, messageHTML, config, callback) {
-    let subject = "A New Form Submission Has Arrived" + (formName ? " - "  + formName : "")
+    const subject = `A New Form Submission Has Arrived ${(formName ? " - "  + formName : "")}`
     if(config.method == 1) {
-        let mailgun = new mailgunJS({ apiKey: config.mailgunAPIKey, domain: config.mailgunDomain })
-        let emailConfig = {
+        const mailgun = new mailgunJS({ 
+            apiKey: config.mailgunAPIKey, 
+            domain: config.mailgunDomain 
+        })
+        const emailConfig = {
             to: toEmail,
             from: config.mailgunFromEmail,
             subject: subject,
@@ -147,15 +148,11 @@ function sendMail(toEmail, formName, replyEmail, messageHTML, config, callback) 
             emailConfig["h:Reply-To"] = replyEmail
         }
         mailgun.messages().send(emailConfig, (err, body) => {
-            let retVal = null
-            if(err) {
-                retVal = err
-            }
-            return(callback(retVal))
+            return(callback(err ? err : null))
         })
     }
     else if(config.method == 2) {
-        let transporter = nodemailer.createTransport({
+        const transporter = nodemailer.createTransport({
             host: config.smtpEmail,
             port: config.smtpPort,
             secure: false,
@@ -164,18 +161,14 @@ function sendMail(toEmail, formName, replyEmail, messageHTML, config, callback) 
                 pass: config.smtpPassword
             }
         })
-        let emailConfig = {
+        const emailConfig = {
             from: config.smtpEmail,
             to: toEmail,
             subject: subject,
             html: messageHTML
         }
-        transporter.sendMail(emailConfig, (err) => {
-            let retVal = null
-            if(err) {
-                retVal = err
-            }
-            return(callback(retVal))
+        transporter.sendMail(emailConfig, err => {
+            return(callback(err ? err : null))
         })
     }
 }

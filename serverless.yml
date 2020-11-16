@@ -1,13 +1,13 @@
-service: lambdaformhandler
+service: formless
 
 frameworkVersion: ">=1.1.0 <2.0.0"
 
 provider:
   name: aws
-  stage: prod
+  region: us-east-1
   runtime: nodejs12.x
   environment:
-    ALLOW_ALL_DOMAINS: "no"
+    ALLOW_ALL_DOMAINS: ""
     ALLOWED_DOMAINS: ""
     MAILGUN_API_KEY: ""
     MAILGUN_FROM_EMAIL: ""

@@ -1,5 +1,5 @@
 <p align="center">
-    <img src="https://zumbro.me/assets/images/FormlessLogo.png" width="40%;" style="margin: 0 auto;">
+    <img src="https://zumbro.me/assets/images/Form-lessLogo.png" width="40%;" style="margin: 0 auto;">
 </p>
 
 An AWS Lambda function for processing HTML forms without the need to write backend code. This works by generating an email report for each form submission based off of the form field names and user submitted values.
@@ -7,14 +7,14 @@ An AWS Lambda function for processing HTML forms without the need to write backe
 # Usage
 ### Initial Setup
 - Run ```npm install``` to pull in the required node packages.
-- Formless uses the [Serverless framework](https://serverless.com/) to simplify the AWS deployment process. To setup Serverless with your AWS account, follow the steps from their [tutorial](https://serverless.com/framework/docs/providers/aws/guide/credentials/) (note that the Serverless module is already added in the provided ```package.json``` file).
+- Form-less uses the [Serverless framework](https://serverless.com/) to simplify the AWS deployment process. To setup Serverless with your AWS account, follow the steps from their [tutorial](https://serverless.com/framework/docs/providers/aws/guide/credentials/) (note that the Serverless module is already added in the provided ```package.json``` file).
 
 ### Configuration & Deploy
 - Before deploying to AWS using Serverless, configurations values need to be added in ```servereless.yml``` for the form handler. These configuration options are:
     - ALLOW_ALL_DOMAINS: Specifies whether or not all domains can POST forms to the form handler. Must be set to ```"yes"``` or ```"no"```.
     - ALLOWED_DOMAINS: Specifies specific domains that can POST forms to the form handler. Is only considered if ALLOW_ALL_DOMAINS is set to ```"no"```. Multiple domain names can be added by separating them with a comma (eg, ```"https://domain1.com/, https://domain2.com/"```)
-    - Mailgun Fields: Formless supports sending submission emails using the [Mailgun](https://www.mailgun.com/) email service. To enable Mailgun, set ```MAILGUN_API_KEY``` to an API key for the Mailgun service, ```MAILGUN_FROM_EMAIL``` to the address the submission emails should appear to come from, and ```MAILGUN_DOMAIN``` to the domain you have connected to Mailgun.
-    - SMTP Fields: As as alternative to Mailgun, Formless also supports sending submission emails over SMTP. To use this method, set ```SMTP_SERVER``` to the address for an SMTP email server, ```SMTP_EMAIL``` to an email address on the SMTP server, ```SMTP_PASSWORD``` to the password associated with the email address, and ```SMTP_PORT``` to the correct port for sending SMTP mail through the server.
+    - Mailgun Fields: Form-less supports sending submission emails using the [Mailgun](https://www.mailgun.com/) email service. To enable Mailgun, set ```MAILGUN_API_KEY``` to an API key for the Mailgun service, ```MAILGUN_FROM_EMAIL``` to the address the submission emails should appear to come from, and ```MAILGUN_DOMAIN``` to the domain you have connected to Mailgun.
+    - SMTP Fields: As as alternative to Mailgun, Form-less also supports sending submission emails over SMTP. To use this method, set ```SMTP_SERVER``` to the address for an SMTP email server, ```SMTP_EMAIL``` to an email address on the SMTP server, ```SMTP_PASSWORD``` to the password associated with the email address, and ```SMTP_PORT``` to the correct port for sending SMTP mail through the server.
 -   Once the configuration values are set, the Lambda function can now be deployed to AWS with the ```serverless --deploy``` command. Running this command will output an endpoint URL that will be needed during form setup below.
 
 ### Form Setup
@@ -46,4 +46,4 @@ An AWS Lambda function for processing HTML forms without the need to write backe
 ```
 
 ### Other
-- Most use cases for Formless will likely fall under the [AWS Lambda Free Tier](https://aws.amazon.com/lambda/pricing/) due to the small amount of compute power needed to process form submissions. However, it is a good idea to monitor usage so that unexpected charges do not incur.
+- Most use cases for Form-less will likely fall under the [AWS Lambda Free Tier](https://aws.amazon.com/lambda/pricing/) due to the small amount of compute power needed to process form submissions. However, it is a good idea to monitor usage so that unexpected charges do not incur.

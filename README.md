@@ -2,9 +2,11 @@
     <img src="https://zumbro.me/assets/images/Form-lessLogo.png" width="40%;" style="margin: 0 auto;">
 </p>
 
+# Form-less
+
 An AWS Lambda function for processing HTML forms without the need to write backend code. This works by generating an email report for each form submission based off of the form field names and user submitted values.
 
-# Usage
+## Usage
 ### Initial Setup
 - Run ```npm install``` to pull in the required node packages.
 - Form-less uses the [Serverless framework](https://serverless.com/) to simplify the AWS deployment process. To setup Serverless with your AWS account, follow the steps from their [tutorial](https://serverless.com/framework/docs/providers/aws/guide/credentials/) (note that the Serverless module is already added in the provided ```package.json``` file).

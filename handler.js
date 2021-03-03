@@ -39,12 +39,12 @@ module.exports.handleForm = (event, context, callback) => {
     }
   }
   else {
-    response.statusCode = 400
     if(!email) {
+      response.statusCode = 400
       console.log(`Input Error: No _email field specified.`)
       console.log(postData)
     }
-    if(!redirectURL) {
+    else if(!redirectURL) {
       response.statusCode = 400
       console.log(`Input Error: No _redirect field specified.`)
       console.log(postData)

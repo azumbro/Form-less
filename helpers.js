@@ -64,11 +64,13 @@ function validateAndFetchEnvVariables(config) {
         }
         else if(process.env.SMTP_SERVER && process.env.SMTP_SERVER.length > 0
             && process.env.SMTP_EMAIL && process.env.SMTP_EMAIL.length > 0
+            && process.env.SMTP_USER && process.env.SMTP_USER.length > 0
             && process.env.SMTP_PASSWORD && process.env.SMTP_PASSWORD.length > 0
             && process.env.SMTP_PORT && process.env.SMTP_PORT.length > 0) {
             config.method = 2
             config.smtpServer = process.env.SMTP_SERVER
             config.smtpEmail = process.env.SMTP_EMAIL
+            config.smtpUser = process.env.SMTP_USER
             config.smtpPassword = process.env.SMTP_PASSWORD
             config.smtpPort = parseInt(process.env.SMTP_PORT)
         }
@@ -127,7 +129,7 @@ function parseFormData(data) {
         const itemParts = item.split("=")
         postData[itemParts[0]] = decodeURIComponent(itemParts[1].replace(/\+/g, '%20'))
     }
-    console.log(postData)
+    console.log(`POST Data - ${postData}`)
     return postData
 }
 
@@ -148,27 +150,33 @@ function sendMail(toEmail, formName, replyEmail, messageHTML, config, callback) 
             emailConfig["h:Reply-To"] = replyEmail
         }
         mailgun.messages().send(emailConfig, (err, body) => {
-            return(callback(err ? err : null))
+            if(body) {
+                console.log(`Data returned from mailgun.messages().send - ${body}`)
+            }
+            return(callback(err))
         })
     }
     else if(config.method == 2) {
         const transporter = nodemailer.createTransport({
-            host: config.smtpEmail,
+            host: config.smtpServer,
             port: config.smtpPort,
-            secure: false,
+            secure: true,
             auth: {
-                user: config.smtpEmail,
+                user: config.smtpUser,
                 pass: config.smtpPassword
             }
         })
         const emailConfig = {
             from: config.smtpEmail,
             to: toEmail,
-            subject: subject,
+            subject,
             html: messageHTML
         }
-        transporter.sendMail(emailConfig, err => {
-            return(callback(err ? err : null))
+        transporter.sendMail(emailConfig, (err, info) => {
+            if(info) {
+                console.log(`Data returned from SMTP call - ${info}`)
+            }
+            return(callback(err))
         })
     }
 }

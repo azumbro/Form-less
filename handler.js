@@ -19,8 +19,8 @@ module.exports.handleForm = (event, context, callback) => {
       helpers.sendMail(email, formName, replyEmail, html, config, err => {
         if(err) {
           response.statusCode = 500
-          console.log(`Error: Issue in sendMail.`)
-          console.log(err)
+          console.error(`Error: Issue in sendMail.`)
+          console.info(`sendMail Error - ${err}.`)
         }
         if(redirectURL) {
           response.statusCode = 301
@@ -33,26 +33,22 @@ module.exports.handleForm = (event, context, callback) => {
     }
     else {
       response.statusCode = 401
-      console.log(`Authentication Error: Domain not authorized in ALLOWED_DOMAINS.`)
-      console.log(postData)
+      console.error(`Authentication Error: Domain not authorized in ALLOWED_DOMAINS.`)
       callback(null, response)
     }
   }
   else {
     if(!email) {
       response.statusCode = 400
-      console.log(`Input Error: No _email field specified.`)
-      console.log(postData)
+      console.error(`Input Error: No _email field specified.`)
     }
     else if(!redirectURL) {
       response.statusCode = 400
-      console.log(`Input Error: No _redirect field specified.`)
-      console.log(postData)
+      console.error(`Input Error: No _redirect field specified.`)
     }
     else if(!config.valid) {
       response.statusCode = 500
-      console.log(`Config Error: ${config.reason}`)
-      console.log(postData)
+      console.error(`Config Error: ${config.reason}`)
     }
     callback(null, response)
   }

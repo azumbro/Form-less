@@ -1,6 +1,6 @@
 service: form-less
 
-frameworkVersion: ">=1.1.0 <2.0.0"
+frameworkVersion: ">=1.1.0 <2.52.2"
 
 provider:
   name: aws
@@ -14,6 +14,7 @@ provider:
     MAILGUN_DOMAIN: ""
     SMTP_SERVER: "" 
     SMTP_EMAIL: ""
+    SMTP_USER: ""
     SMTP_PASSWORD: ""
     SMTP_PORT: ""
 

@@ -134,7 +134,7 @@ function parseFormData(data) {
 }
 
 function sendMail(toEmail, formName, replyEmail, messageHTML, config, callback) {
-    const subject = `A New Form Submission Has Arrived ${(formName ? " - "  + formName : "")}`
+    const subject = `A New Form Submission Has Arrived ${(formName ? " - "  + formName : "")} (${new Date().toLocaleString()})`
     if(config.method == 1) {
         const mailgun = new mailgunJS({ 
             apiKey: config.mailgunAPIKey, 

@@ -83,8 +83,6 @@ function validateAndFetchEnvVariables(config) {
 }
 
 function getEmailHeader(formName, postURL) {
-    const date = (new Date)
-    const dateString = ((date.getMonth() > 8) ? (date.getMonth() + 1) : ('0' + (date.getMonth() + 1))) + '/' + ((date.getDate() > 9) ? date.getDate() : ('0' + date.getDate())) + '/' + date.getFullYear()  
     let html = `
         <h2>New Form Submission ${(formName ? " for " + formName : (postURL ? " for " + postURL : ""))}</h2>
       `
@@ -94,7 +92,7 @@ function getEmailHeader(formName, postURL) {
         `
       }
       html += `
-        <b>Date:</b> ${dateString} (UTC)<br><br>
+        <b>Timestamp:</b> ${new Date().toLocaleString()} (UTC)<br><br>
       `
       return html
 }

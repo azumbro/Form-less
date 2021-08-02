@@ -14,8 +14,7 @@ module.exports.handleForm = (event, context, callback) => {
   const config = helpers.validateAndFetchEnvVariables()
   if(config.valid && email && redirectURL) {
     if(config.allowAllDomains || config.allowedDomains.includes(postOrigin)) {
-      let html = helpers.getEmailHeader(formName, postURL)
-      html += helpers.handleFormFields(postData)
+      const html = helpers.getEmailHeader(formName, postURL) + helpers.handleFormFields(postData)
       helpers.sendMail(email, formName, replyEmail, html, config, err => {
         if(err) {
           response.statusCode = 500

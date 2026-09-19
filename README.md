@@ -1,7 +1,3 @@
-<p align="center">
-    <img src="https://zumbro.me/assets/images/Form-lessLogo.png" width="40%;" style="margin: 0 auto;">
-</p>
-
 # Form-less
 
 An AWS Lambda function for processing HTML forms without the need to write backend code. This works by generating an email report for each form submission based off of the form field names and user submitted values.
